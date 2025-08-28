@@ -44,7 +44,7 @@ function saveLocal(map: CodeMap) {
 
 export async function loadCodes(): Promise<CodeMap> {
   if (kv) {
-    const all = await kv.hgetall<CodeMap>("EIC_CODES");
+    const all = (await kv.hgetall("EIC_CODES")) as unknown as CodeMap;
     return all || {};
   }
   return loadLocal();
@@ -63,7 +63,7 @@ export async function saveCodes(map: CodeMap) {
   saveLocal(map);
 }
 
-export async function putCodes(items: Array<Omit<CodeRecord, "used"> & { used?: boolean }>) {
+export async function putCodes(items: Array<{ code: string; campaign: string; amount: string; used?: boolean }>) {
   const map = await loadCodes();
   for (const it of items) map[key(it.campaign, it.code)] = { ...it, used: !!it.used } as CodeRecord;
   await saveCodes(map);
@@ -72,7 +72,7 @@ export async function putCodes(items: Array<Omit<CodeRecord, "used"> & { used?: 
 export async function getCode(campaign: string, code: string): Promise<CodeRecord | null> {
   const k = key(campaign, code);
   if (kv) {
-    const v = await kv.hget<CodeRecord>("EIC_CODES", k);
+    const v = (await kv.hget("EIC_CODES", k)) as unknown as CodeRecord;
     return (v as any) || null;
   }
   const map = loadLocal();
