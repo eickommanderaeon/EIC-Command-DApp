@@ -68,6 +68,19 @@ export default function ClaimPage() {
       const receipt = await txResp.wait();
       setTx(receipt.hash);
       setStatus("✅ Claimed!");
+
+      try {
+        await fetch("/api/claim/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            campaign,
+            code,
+            tx: receipt.hash,
+            recipient: await signer.getAddress(),
+          }),
+        });
+      } catch {}
     } catch (e: any) {
       console.error(e);
       setError(e.message || "Claim failed");
@@ -98,4 +111,3 @@ export default function ClaimPage() {
     </main>
   );
 }
-
