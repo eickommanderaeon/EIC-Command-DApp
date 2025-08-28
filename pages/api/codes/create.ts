@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import QRCode from "qrcode";
+import { putCodes } from "@/lib/store";
 
 type CodeItem = {
   code: string;
@@ -39,6 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     items.push({ code, amount: String(amount), campaign });
   }
 
+  // Persist codes to local JSON store
+  putCodes(items.map(it => ({ ...it, used: false })));
+
   // Generate QR PNGs (optional but handy)
   for (const it of items) {
     const claimUrl = `${urlBase}/claim?campaign=${encodeURIComponent(it.campaign)}&code=${encodeURIComponent(it.code)}`;
@@ -60,4 +64,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     files: items.map(it => `/qr/${it.campaign}-${it.code}.png`),
   });
 }
-
