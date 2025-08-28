@@ -9,6 +9,10 @@ try {
   kv = require("@vercel/kv").kv;
 } catch {}
 
+// Only use KV if both the module loaded and required env vars are present
+const hasKVEnv = !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+const useKV = !!(kv && hasKVEnv);
+
 const DEFAULT_PATH = path.join(process.cwd(), "data", "codes.json");
 const STORE_PATH = process.env.CODES_STORE_PATH || DEFAULT_PATH;
 
@@ -43,7 +47,7 @@ function saveLocal(map: CodeMap) {
 }
 
 export async function loadCodes(): Promise<CodeMap> {
-  if (kv) {
+  if (useKV) {
     const all = (await kv.hgetall("EIC_CODES")) as unknown as CodeMap;
     return all || {};
   }
@@ -51,7 +55,7 @@ export async function loadCodes(): Promise<CodeMap> {
 }
 
 export async function saveCodes(map: CodeMap) {
-  if (kv) {
+  if (useKV) {
     // replace whole hash
     await kv.del("EIC_CODES");
     const entries = Object.entries(map);
@@ -71,8 +75,8 @@ export async function putCodes(items: Array<{ code: string; campaign: string; am
 
 export async function getCode(campaign: string, code: string): Promise<CodeRecord | null> {
   const k = key(campaign, code);
-  if (kv) {
-    const v = (await kv.hget("EIC_CODES", k)) as unknown as CodeRecord;
+  if (useKV) {
+    const v = (await kv.hget("EIC_CODES", k)) as any as CodeRecord;
     return (v as any) || null;
   }
   const map = loadLocal();
@@ -81,8 +85,8 @@ export async function getCode(campaign: string, code: string): Promise<CodeRecor
 
 export async function markUsed(campaign: string, code: string, update: Partial<CodeRecord> = {}) {
   const k = key(campaign, code);
-  if (kv) {
-    const v = await kv.hget<CodeRecord>("EIC_CODES", k);
+  if (useKV) {
+    const v = (await kv.hget("EIC_CODES", k)) as unknown as CodeRecord;
     if (!v) return false;
     const next = { ...v, used: true, usedAt: Date.now(), ...update };
     await kv.hset("EIC_CODES", { [k]: next });
