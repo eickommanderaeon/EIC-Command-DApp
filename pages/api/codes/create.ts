@@ -40,8 +40,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     items.push({ code, amount: String(amount), campaign });
   }
 
-  // Persist codes to local JSON store
-  putCodes(items.map(it => ({ ...it, used: false })));
+  // Persist codes (KV in prod, JSON locally)
+  await putCodes(items.map(it => ({ ...it, used: false })));
 
   // Generate QR PNGs (optional but handy)
   for (const it of items) {

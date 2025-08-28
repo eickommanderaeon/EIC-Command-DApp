@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!campaign || !code) return res.status(400).json({ ok: false, error: "Missing campaign or code" });
 
-    const rec = getCode(campaign, code);
+    const rec = await getCode(campaign, code);
     if (!rec) return res.status(404).json({ ok: false, error: "Invalid code" });
     if (rec.used) return res.status(410).json({ ok: false, error: "Code already used" });
 
