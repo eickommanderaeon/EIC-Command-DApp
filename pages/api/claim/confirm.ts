@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Optional: parse logs to ensure it was a claim function — skipped for now.
 
-    const ok = markUsed(campaign, code, { recipient, txHash: tx });
+    const ok = await markUsed(campaign, code, { recipient, txHash: tx });
     if (!ok) return res.status(404).json({ ok: false, error: "Code not found" });
 
     return res.status(200).json({ ok: true });
@@ -33,4 +33,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ ok: false, error: e.message || "Server error" });
   }
 }
-
