@@ -28,3 +28,14 @@ data/*.json
 # Build artifacts
 dist/
 coverage/
+
+# Next.js
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Env (never commit)
+.env
+.env.*
